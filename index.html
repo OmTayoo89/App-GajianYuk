@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Narbara Payroll System - Mobile Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        :root {
+            --narbara-blue: #002347;
+            --narbara-gold: #c5a059;
+            --bg-light: #f4f7fa;
+            --danger: #d63031;
+            --success: #00b894;
+            --white: #ffffff;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            background-color: var(--bg-light); 
+            margin: 0; 
+            color: #333; 
+            padding-bottom: 70px; /* Space for bottom nav */
+        }
+
+        /* HEADER */
+        .header {
+            background: var(--narbara-blue);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header h1 { margin: 0; font-size: 16px; letter-spacing: 1px; text-transform: uppercase; }
+
+        /* BOTTOM NAVIGATION */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--white);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
+        }
+        .nav-item {
+            text-align: center;
+            color: #95a5a6;
+            font-size: 10px;
+            font-weight: bold;
+            text-decoration: none;
+            flex: 1;
+        }
+        .nav-item.active { color: var(--narbara-blue); }
+        .nav-item i { display: block; font-size: 18px; margin-bottom: 2px; }
+
+        /* CONTAINERS */
+        .container { padding: 15px; display: none; }
+        .container.active { display: block; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: var(--white); border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        h2 { color: var(--narbara-blue); font-size: 13px; margin: 0 0 15px 0; border-left: 4px solid var(--narbara-gold); padding-left: 10px; text-transform: uppercase; }
+
+        /* FORM */
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 10px; font-weight: 700; color: #7f8c8d; margin-bottom: 4px; text-transform: uppercase; }
+        input, select { width: 100%; padding: 12px; border: 1.5px solid #ecf0f1; border-radius: 8px; font-size: 14px; background: #fdfdfd; }
+        input:focus { border-color: var(--narbara-gold); outline: none; }
+        
+        .row { display: flex; gap: 10px; }
+        .row > div { flex: 1; }
+
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn-primary { background: var(--narbara-blue); color: white; margin-top: 10px; }
+        .btn-pdf { background: var(--danger); color: white; margin-top: 5px; padding: 8px; font-size: 10px; }
+        .btn-success { background: var(--success); color: white; }
+
+        /* TABLE MOBILE */
+        .table-container { overflow-x: auto; margin: 0 -5px; }
+        table { width: 100%; border-collapse: collapse; min-width: 450px; }
+        th { background: #f8f9fa; color: #7f8c8d; font-size: 10px; padding: 10px; text-align: left; }
+        td { padding: 12px 10px; border-bottom: 1px solid #f1f1f1; font-size: 12px; }
+
+        /* ANALYTICS */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-card { background: white; padding: 12px; border-radius: 10px; text-align: center; border-bottom: 3px solid var(--narbara-gold); }
+        .stat-card label { font-size: 9px; }
+        .stat-card div { font-size: 14px; font-weight: 800; color: var(--narbara-blue); }
+
+        /* MATRIX MOBILE */
+        .matrix-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: #eee; padding: 4px; border-radius: 8px; }
+        .matrix-box { background: white; height: 65px; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2px; font-size: 8px; }
+        .matrix-box b { font-size: 7px; color: var(--narbara-blue); margin-bottom: 2px; }
+        .count-badge { background: var(--narbara-gold); color: white; padding: 1px 6px; border-radius: 10px; font-weight: bold; }
+        
+        .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 11px; margin-bottom: 10px; font-weight: 600; }
+        .checkbox-group input { width: 18px; height: 18px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>SIM PAYROLL NARBARA</h1>
+</div>
+
+<div class="bottom-nav">
+    <a href="#" class="nav-item active" id="nav-input" onclick="showTab('input')"><i>➕</i>INPUT</a>
+    <a href="#" class="nav-item" id="nav-data" onclick="showTab('data')"><i>📂</i>DATA</a>
+    <a href="#" class="nav-item" id="nav-analitik" onclick="showTab('analitik')"><i>📈</i>ANALITIK</a>
+</div>
+
+<div id="input" class="container active">
+    <div class="card">
+        <h2>Identitas Karyawan</h2>
+        <div class="form-group"><label>Nama Lengkap</label><input type="text" id="in_nama" placeholder="Masukkan nama"></div>
+        <div class="form-group"><label>Nomor NPWP</label><input type="text" id="in_npwp" placeholder="00.000.000.0-000.000"></div>
+        <div class="row">
+            <div class="form-group"><label>Divisi</label><input type="text" id="in_divisi" placeholder="HR/Finance"></div>
+            <div class="form-group"><label>Umur</label><input type="number" id="in_umur" placeholder="Th"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Pendapatan & PTKP</h2>
+        <div class="row">
+            <div class="form-group"><label>Gaji Pokok</label><input type="number" id="in_gajipokok" value="0"></div>
+            <div class="form-group"><label>Tunj. Tetap</label><input type="number" id="in_tunjangan" value="0"></div>
+        </div>
+        <div class="form-group">
+            <label>Status PTKP (Kategori TER)</label>
+            <select id="in_ptkp">
+                <option value="TK/0">TK/0 - Tidak Kawin (A)</option>
+                <option value="TK/1">TK/1 - Tidak Kawin (A)</option>
+                <option value="TK/2">TK/2 - Tidak Kawin (B)</option>
+                <option value="TK/3">TK/3 - Tidak Kawin (B)</option>
+                <option value="K/0">K/0 - Kawin (A)</option>
+                <option value="K/1">K/1 - Kawin (B)</option>
+                <option value="K/2">K/2 - Kawin (B)</option>
+                <option value="K/3">K/3 - Kawin (C)</option>
+                <option value="K/I/0">K/I/0 - Kawin Istri Gabung (B)</option>
+                <option value="K/I/1">K/I/1 - Kawin Istri Gabung (B)</option>
+                <option value="K/I/2">K/I/2 - Kawin Istri Gabung (C)</option>
+                <option value="K/I/3">K/I/3 - Kawin Istri Gabung (C)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>BPJS & Performa</h2>
+        <div class="form-group">
+            <label>Risiko Kerja (JKK)</label>
+            <select id="in_jkk_rate">
+                <option value="0.0024">0.24% (Sangat Rendah)</option>
+                <option value="0.0054">0.54% (Rendah)</option>
+                <option value="0.0089">0.89% (Sedang)</option>
+                <option value="0.0127">1.27% (Tinggi)</option>
+                <option value="0.0174">1.74% (Sangat Tinggi)</option>
+            </select>
+        </div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="c_jht" checked> <span>Potong JHT & JP (3%)</span>
+        </div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="c_kes" checked> <span>Potong BPJS Kes (1%)</span>
+        </div>
+        <div class="form-group"><label>KPI Performa (0-100)</label><input type="number" id="in_kpi" value="80"></div>
+        <button class="btn btn-primary" onclick="processData()">HITUNG & SIMPAN DATA</button>
+    </div>
+</div>
+
+<div id="data" class="container">
+    <div class="card">
+        <h2>Database Payroll</h2>
+        <div class="table-container">
+            <table id="main_table">
+                <thead>
+                    <tr>
+                        <th>KARYAWAN</th>
+                        <th>BRUTO</th>
+                        <th>PAJAK</th>
+                        <th>NETTO</th>
+                        <th>AKSI</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="analitik" class="container">
+    <div class="card">
+        <h2>Executive Dashboard</h2>
+        <div class="form-group"><label>Total Revenue Perusahaan</label><input type="number" id="ex_rev" value="1000000000"></div>
+        <button class="btn btn-primary" onclick="renderExecutive()">REFRESH ANALITIK</button>
+    </div>
+
+    <div class="stat-grid">
+        <div class="stat-card"><label>Total Cost</label><div id="st_cost">Rp 0</div></div>
+        <div class="stat-card"><label>Ratio (%)</label><div id="st_ratio">0%</div></div>
+        <div class="stat-card"><label>Avg KPI</label><div id="st_kpi">0</div></div>
+        <div class="stat-card"><label>ROI Factor</label><div id="st_roi">0</div></div>
+    </div>
+
+    <div class="card">
+        <h2>9-Box Talent Matrix</h2>
+        <div class="matrix-container" id="matrix_ui">
+            <div class="matrix-box"><b>Future Leader</b><span class="count-badge" id="m1">0</span></div>
+            <div class="matrix-box"><b>High Potential</b><span class="count-badge" id="m2">0</span></div>
+            <div class="matrix-box" style="background:#fff9e6"><b>STAR ASSET</b><span class="count-badge" id="m3">0</span></div>
+            <div class="matrix-box"><b>Enigma</b><span class="count-badge" id="m4">0</span></div>
+            <div class="matrix-box"><b>Core Talent</b><span class="count-badge" id="m5">0</span></div>
+            <div class="matrix-box"><b>High Prof.</b><span class="count-badge" id="m6">0</span></div>
+            <div class="matrix-box" style="background:#ffecec"><b>DANGER ZONE</b><span class="count-badge" id="m7">0</span></div>
+            <div class="matrix-box"><b>Underperf.</b><span class="count-badge" id="m8">0</span></div>
+            <div class="matrix-box"><b>Solid Perf.</b><span class="count-badge" id="m9">0</span></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>ROI Per Karyawan</h2>
+        <div class="table-container">
+            <table id="exec_table">
+                <thead><tr><th>NAMA</th><th>KPI</th><th>ROI</th><th>STATUS</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <button class="btn btn-success" style="margin-top:15px;" onclick="downloadExecutivePDF()">UNDUH LAPORAN (PDF)</button>
+    </div>
+</div>
+
+<script>
+    // --- VERSI LENGKAP TER DATA 2024 ---
+    const TER_DATA = {
+        'A': [[0, 5400000, 0], [5400000, 5650000, 0.0025], [5650000, 5950000, 0.005], [5950000, 6300000, 0.0075], [6300000, 6750000, 0.01], [6750000, 7500000, 0.0125], [7500000, 8550000, 0.015], [8550000, 9650000, 0.0175], [9650000, 10050000, 0.02], [10050000, 10350000, 0.0225], [10350000, 10700000, 0.025], [10700000, 11050000, 0.03], [11050000, 11600000, 0.035], [11600000, 12500000, 0.04], [12500000, 13750000, 0.05], [13750000, 15100000, 0.06], [15100000, 16950000, 0.07], [16950000, 19750000, 0.08], [19750000, 24150000, 0.09], [24150000, 26450000, 0.10], [26450000, 28000000, 0.11], [28000000, 30050000, 0.12], [30050000, 32400000, 0.13], [32400000, 35400000, 0.14], [35400000, 39100000, 0.15], [39100000, 43850000, 0.16], [43850000, 47800000, 0.17], [47800000, 51400000, 0.18], [51400000, 56300000, 0.19], [56300000, 62200000, 0.20], [62200000, 68600000, 0.21], [68600000, 77500000, 0.22], [77500000, 89000000, 0.23], [89000000, 103000000, 0.24], [103000000, 125000000, 0.25], [125000000, 157000000, 0.26], [157000000, 206000000, 0.27], [206000000, 337000000, 0.28], [337000000, 454000000, 0.29], [454000000, 550000000, 0.30], [550000000, 695000000, 0.31], [695000000, 910000000, 0.32], [910000000, 1400000000, 0.33], [1400000000, 99999999999, 0.34]],
+        'B': [[0, 6200000, 0], [6200000, 6500000, 0.0025], [6500000, 6850000, 0.005], [6850000, 7300000, 0.0075], [7300000, 9200000, 0.01], [9200000, 10750000, 0.015], [10750000, 11250000, 0.02], [11250000, 11600000, 0.025], [11600000, 12600000, 0.03], [12600000, 13600000, 0.04], [13600000, 14950000, 0.05], [14950000, 16400000, 0.06], [16400000, 18450000, 0.07], [18450000, 21850000, 0.08], [21850000, 26000000, 0.09], [26000000, 27700000, 0.10], [27700000, 29350000, 0.11], [29350000, 31450000, 0.12], [31450000, 33950000, 0.13], [33950000, 37100000, 0.14], [37100000, 41100000, 0.15], [41100000, 45800000, 0.16], [45800000, 49500000, 0.17], [49500000, 53800000, 0.18], [53800000, 58500000, 0.19], [58500000, 64000000, 0.20], [64000000, 71000000, 0.21], [71000000, 80000000, 0.22], [80000000, 93000000, 0.23], [93000000, 109000000, 0.24], [109000000, 129000000, 0.25], [129000000, 163000000, 0.26], [163000000, 211000000, 0.27], [211000000, 374000000, 0.28], [374000000, 459000000, 0.29], [459000000, 555000000, 0.30], [555000000, 704000000, 0.31], [704000000, 957000000, 0.32], [957000000, 1405000000, 0.33], [1405000000, 99999999999, 0.34]],
+        'C': [[0, 6600000, 0], [6600000, 6950000, 0.0025], [6950000, 7350000, 0.005], [7350000, 7800000, 0.0075], [7800000, 8850000, 0.01], [8850000, 9800000, 0.0125], [9800000, 10950000, 0.015], [10950000, 11200000, 0.0175], [11200000, 12050000, 0.02], [12050000, 12950000, 0.03], [12950000, 14150000, 0.04], [14150000, 15550000, 0.05], [15550000, 17050000, 0.06], [17050000, 19500000, 0.07], [19500000, 22700000, 0.08], [22700000, 26600000, 0.09], [26600000, 28100000, 0.10], [28100000, 30100000, 0.11], [30100000, 32600000, 0.12], [32600000, 35400000, 0.13], [35400000, 38900000, 0.14], [38900000, 43000000, 0.15], [43000000, 47400000, 0.16], [47400000, 51200000, 0.17], [51200000, 55800000, 0.18], [55800000, 60400000, 0.19], [60400000, 66700000, 0.20], [66700000, 74500000, 0.21], [74500000, 83200000, 0.22], [83200000, 95600000, 0.23], [95600000, 110000000, 0.24], [110000000, 134000000, 0.25], [134000000, 169000000, 0.26], [169000000, 221000000, 0.27], [221000000, 390000000, 0.28], [390000000, 463000000, 0.29], [463000000, 561000000, 0.30], [561000000, 709000000, 0.31], [709000000, 965000000, 0.32], [965000000, 1419000000, 0.33], [1419000000, 99999999999, 0.34]]
+    };
+
+    function showTab(tabId) {
+        document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        document.getElementById('nav-' + tabId).classList.add('active');
+        if(tabId === 'data') renderTable();
+        if(tabId === 'analitik') renderExecutive();
+    }
+
+    function processData() {
+        const nama = document.getElementById('in_nama').value;
+        if(!nama) return alert("Nama wajib diisi!");
+        
+        const gapok = parseFloat(document.getElementById('in_gajipokok').value) || 0;
+        const tunj = parseFloat(document.getElementById('in_tunjangan').value) || 0;
+        const ptkp = document.getElementById('in_ptkp').value;
+        const jkkRate = parseFloat(document.getElementById('in_jkk_rate').value);
+        
+        // BPJS Perusahaan (Bruto Addition)
+        const bpjs_jkk = gapok * jkkRate;
+        const bpjs_jkm = gapok * 0.003;
+        const bpjs_kes_pk = Math.min(gapok + tunj, 12000000) * 0.04;
+        const bruto = gapok + tunj + bpjs_jkk + bpjs_jkm + bpjs_kes_pk;
+
+        // Potongan Karyawan
+        const pot_jht = document.getElementById('c_jht').checked ? gapok * 0.02 : 0;
+        const pot_jp = document.getElementById('c_jht').checked ? Math.min(gapok, 10047970) * 0.01 : 0;
+        const pot_kes = document.getElementById('c_kes').checked ? Math.min(gapok + tunj, 12000000) * 0.01 : 0;
+
+        // Logika TER Kategori
+        let cat = 'A';
+        if(['TK/2','TK/3','K/0','K/1','K/2','K/I/0','K/I/1'].includes(ptkp)) cat = 'B';
+        if(['K/3','K/I/2','K/I/3'].includes(ptkp)) cat = 'C';
+        
+        let rate = 0;
+        const currentCatData = TER_DATA[cat];
+        for(let r of currentCatData) {
+            if(bruto >= r[0] && bruto < r[1]) { rate = r[2]; break; }
+        }
+        
+        const pajak = bruto * rate;
+        const thp = (gapok + tunj) - pajak - pot_jht - pot_jp - pot_kes; 
+
+        const data = {
+            id: Date.now(),
+            nama, divisi: document.getElementById('in_divisi').value,
+            npwp: document.getElementById('in_npwp').value,
+            gapok, tunj, jkk: bpjs_jkk, jkm: bpjs_jkm, kes_pk: bpjs_kes_pk,
+            pajak, potongan: pot_jht + pot_jp + pot_kes,
+            bruto, thp, kpi: parseFloat(document.getElementById('in_kpi').value) || 0
+        };
+
+        let db = JSON.parse(localStorage.getItem('narbara_db')) || [];
+        db.push(data);
+        localStorage.setItem('narbara_db', JSON.stringify(db));
+        alert("Data Berhasil Disimpan!");
+        showTab('data');
+    }
+
+    function renderTable() {
+        const db = JSON.parse(localStorage.getItem('narbara_db')) || [];
+        const f = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
+        const tbody = document.querySelector('#main_table tbody');
+        tbody.innerHTML = db.slice().reverse().map(i => `
+            <tr>
+                <td><b>${i.nama}</b><br><small>${i.divisi}</small></td>
+                <td>${f(i.bruto)}</td>
+                <td style="color:red">${f(i.pajak)}</td>
+                <td style="color:green; font-weight:bold">${f(i.thp)}</td>
+                <td><button class="btn btn-pdf" onclick="downloadSlipPDF(${i.id})">PDF</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function renderExecutive() {
+        const db = JSON.parse(localStorage.getItem('narbara_db')) || [];
+        const rev = parseFloat(document.getElementById('ex_rev').value) || 1;
+        const f = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
+        
+        let tCost = 0, tKpi = 0, mCount = new Array(10).fill(0);
+        const tbody = document.querySelector('#exec_table tbody');
+        
+        tbody.innerHTML = db.map(i => {
+            tCost += i.bruto; tKpi += i.kpi;
+            const roi = (rev / (db.length || 1)) / i.bruto;
+            let status = "MAINTAIN"; let box = 5;
+            
+            if (roi > 3) {
+                if (i.kpi >= 85) { box = 3; status = "STAR"; }
+                else if (i.kpi >= 70) { box = 2; status = "HIGH POT"; }
+                else { box = 1; status = "FUTURE"; }
+            } else if (roi >= 1.5) {
+                if (i.kpi >= 85) { box = 6; status = "HIGH PROF"; }
+                else if (i.kpi >= 70) { box = 5; status = "CORE"; }
+                else { box = 4; status = "ENIGMA"; }
+            } else {
+                if (i.kpi >= 85) { box = 9; status = "SOLID"; }
+                else if (i.kpi >= 70) { box = 8; status = "UNDER"; }
+                else { box = 7; status = "DANGER"; }
+            }
+            mCount[box]++;
+            return `<tr><td>${i.nama}</td><td>${i.kpi}</td><td>${roi.toFixed(1)}x</td><td><b>${status}</b></td></tr>`;
+        }).join('');
+
+        document.getElementById('st_cost').innerText = f(tCost);
+        document.getElementById('st_ratio').innerText = ((tCost/rev)*100).toFixed(1) + "%";
+        document.getElementById('st_kpi').innerText = db.length ? (tKpi/db.length).toFixed(1) : 0;
+        document.getElementById('st_roi').innerText = tCost > 0 ? (rev/tCost).toFixed(1) : "0";
+        for(let j=1; j<=9; j++) document.getElementById(`m${j}`).innerText = mCount[j];
+    }
+
+    function downloadSlipPDF(id) {
+        const db = JSON.parse(localStorage.getItem('narbara_db')) || [];
+        const item = db.find(x => x.id === id);
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const f = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(n);
+
+        doc.setFont("helvetica", "bold"); doc.text("SLIP GAJI KARYAWAN", 105, 20, { align: 'center' });
+        doc.text("NARBARA ENTERPRISE", 105, 27, { align: 'center' });
+        doc.line(20, 32, 190, 32);
+        doc.setFontSize(10);
+        doc.text(`Nama : ${item.nama}`, 20, 42);
+        doc.text(`Divisi : ${item.divisi}`, 20, 48);
+        doc.text(`NPWP : ${item.npwp}`, 20, 54);
+
+        const data = [
+            ["Item Pendapatan", "Nilai"],
+            ["Gaji Pokok", f(item.gapok)],
+            ["Tunjangan Tetap", f(item.tunj)],
+            ["Premi JKK/JKM", f(item.jkk + item.jkm)],
+            ["Pajak PPh 21 (TER)", `- ${f(item.pajak)}`],
+            ["Potongan Karyawan", `- ${f(item.potongan)}`],
+            ["TAKE HOME PAY", f(item.thp)]
+        ];
+
+        doc.autoTable({ startY: 65, head: [data[0]], body: data.slice(1), theme: 'grid' });
+        doc.save(`Slip_${item.nama}.pdf`);
+    }
+
+    function downloadExecutivePDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text("EXECUTIVE REPORT - SDM ANALYTICS", 105, 20, { align: 'center' });
+        doc.autoTable({ html: '#exec_table', startY: 30, theme: 'striped' });
+        doc.save('Analytics_Narbara.pdf');
+    }
+
+    window.onload = renderTable;
+</script>
+</body>
+</html>
