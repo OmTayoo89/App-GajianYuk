@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Narbara Payroll System - Mobile Pro</title>
+    <title>Between The Tree Payroll System - Mobile Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -29,7 +29,7 @@
 
         /* HEADER */
         .header {
-            background: var(--narbara-blue);
+            background: var(--Payroll System-blue);
             color: white;
             padding: 15px;
             text-align: center;
@@ -111,13 +111,13 @@
 <body>
 
 <div class="header">
-    <h1>SIM PAYROLL NARBARA</h1>
+    <h1>Between The Tree</h1>
 </div>
 
 <div class="bottom-nav">
     <a href="#" class="nav-item active" id="nav-input" onclick="showTab('input')"><i>➕</i>INPUT</a>
     <a href="#" class="nav-item" id="nav-data" onclick="showTab('data')"><i>📂</i>DATA</a>
-    <a href="#" class="nav-item" id="nav-analitik" onclick="showTab('analitik')"><i>📈</i>ANALITIK</a>
+    <a href="#" class="nav-item" id="nav-analitik" onclick="showTab('analitik')"><i>📈</i>Human Capital Analytics</a>
 </div>
 
 <div id="input" class="container active">
@@ -203,7 +203,7 @@
     <div class="card">
         <h2>Executive Dashboard</h2>
         <div class="form-group"><label>Total Revenue Perusahaan</label><input type="number" id="ex_rev" value="1000000000"></div>
-        <button class="btn btn-primary" onclick="renderExecutive()">REFRESH ANALITIK</button>
+        <button class="btn btn-primary" onclick="renderExecutive()">Analytics</button>
     </div>
 
     <div class="stat-grid">
@@ -367,7 +367,7 @@
         const f = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(n);
 
         doc.setFont("helvetica", "bold"); doc.text("SLIP GAJI KARYAWAN", 105, 20, { align: 'center' });
-        doc.text("NARBARA ENTERPRISE", 105, 27, { align: 'center' });
+        doc.text("Between The Tree Payroll System", 105, 27, { align: 'center' });
         doc.line(20, 32, 190, 32);
         doc.setFontSize(10);
         doc.text(`Nama : ${item.nama}`, 20, 42);
@@ -391,7 +391,7 @@
     function downloadExecutivePDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.text("EXECUTIVE REPORT - SDM ANALYTICS", 105, 20, { align: 'center' });
+        doc.text("Human Capital Analytics", 105, 20, { align: 'center' });
         doc.autoTable({ html: '#exec_table', startY: 30, theme: 'striped' });
         doc.save('Analytics_Narbara.pdf');
     }
